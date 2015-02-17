@@ -3,10 +3,8 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-img = cv2.imread('Images/ivr1415pract1data1/train3.jpg', 0)
 
-
-def threshes_example():
+def threshes_example(img):
     ret, thresh1 = cv2.threshold(img, 129, 255, cv2.THRESH_BINARY)
     ret, thresh2 = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
     ret, thresh3 = cv2.threshold(img, 127, 255, cv2.THRESH_TRUNC)
@@ -24,7 +22,7 @@ def threshes_example():
     plt.show()
 
 
-def contour_example():
+def contour_example(img):
     ret, thresh = cv2.threshold(img, 129, 255, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -36,7 +34,7 @@ def contour_example():
     plt.show()
 
 
-def bounding_box_example():
+def bounding_box_example(img):
     # turn the image into binary (black and white, no grey)
     ret, thresh = cv2.threshold(img, 129, 255, cv2.THRESH_BINARY)
     # find all the contours in the image, all areas of joint white/black
@@ -48,7 +46,6 @@ def bounding_box_example():
 
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        print area
         if area > biggest_cnt_area:
             biggest_cnt = cnt
             biggest_cnt_area = area
@@ -65,5 +62,32 @@ def bounding_box_example():
     plt.show()
 
 
+def sift_example(img):
+    sift = cv2.SIFT()
+    kp = sift.detect(img, None)
+
+    img = cv2.drawKeypoints(img, kp)
+     # display the image
+    plt.imshow(img)
+    plt.title("SIFT image")
+    plt.show()
+
+
+def surf_example(img):
+    # Create SURF object. You can specify params here or later.
+    # Here I set Hessian Threshold to 400
+    surf = cv2.SURF(400)
+
+    # Find keypoints and descriptors directly
+    kp, des = surf.detectAndCompute(img, None)
+
+    img = cv2.drawKeypoints(img, kp)
+     # display the image
+    plt.imshow(img)
+    plt.title("SURF image")
+    plt.show()
+
+
 if __name__ == "__main__":
-    bounding_box_example()
+    image = cv2.imread('Images/ivr1415pract1data1/train32.jpg', 0)
+    surf_example(image)
