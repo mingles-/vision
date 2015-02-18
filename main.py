@@ -75,8 +75,8 @@ def sift_example(img):
 
 def surf_example(img):
     # Create SURF object. You can specify params here or later.
-    # Here I set Hessian Threshold to 400
-    surf = cv2.SURF(400)
+    # Here I set Hessian Threshold to 400 (best to be between 300-500)
+    surf = cv2.SURF(5000)
 
     # Find keypoints and descriptors directly
     kp, des = surf.detectAndCompute(img, None)
@@ -88,6 +88,25 @@ def surf_example(img):
     plt.show()
 
 
+def orb_example(img):
+    # Initiate STAR detector
+    orb = cv2.ORB()
+
+    # find the keypoints with ORB
+    kp = orb.detect(img, None)
+
+    # compute the descriptors with ORB
+    kp, des = orb.compute(img, kp)
+
+    # draw only keypoints location, not size and orientation
+    img2 = cv2.drawKeypoints(img, kp, color=(0, 255, 0), flags=0)
+
+     # display the image
+    plt.imshow(img2)
+    plt.title("ORB image")
+    plt.show()
+
+
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train32.jpg', 0)
-    surf_example(image)
+    image = cv2.imread('Images/ivr1415pract1data1/train7.jpg', 0)
+    orb_example(image)
