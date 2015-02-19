@@ -41,17 +41,10 @@ def bounding_box_example(img):
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # figure out the largest contour area
-    biggest_cnt = None
-    biggest_cnt_area = 0
-
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        if area > biggest_cnt_area:
-            biggest_cnt = cnt
-            biggest_cnt_area = area
+    card_contour = sorted(contours, key=cv2.contourArea, reverse=True)[0]
 
     # draw a rotated box around the biggest contour
-    rect = cv2.minAreaRect(biggest_cnt)
+    rect = cv2.minAreaRect(card_contour)
     box = cv2.cv.BoxPoints(rect)
     box = np.int0(box)
     cv2.drawContours(img, [box], 0, (0, 0, 255), 2)
@@ -108,5 +101,5 @@ def orb_example(img):
 
 
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train7.jpg', 0)
-    orb_example(image)
+    image = cv2.imread('Images/ivr1415pract1data1/train1.jpg', 0)
+    bounding_box_example(image)
