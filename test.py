@@ -17,6 +17,14 @@ class CardClassifierTest(unittest.TestCase):
         label = card_classifier.train_labels[0]
         self.assertEquals(label, 1)
 
+    def test_red_count(self):
+        black_card = cv2.imread('Images/ivr1415pract1data1/train1.jpg')
+        red_card = cv2.imread('Images/ivr1415pract1data1/train2.jpg')
+        c = CardClassifier()
+        black_count = c.count_red_pixels(black_card)
+        red_count = c.count_red_pixels(red_card)
+        self.assertTrue(black_count < red_count)
+
 
 if __name__ == "__main__":
     unittest.main()

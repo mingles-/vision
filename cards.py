@@ -50,6 +50,19 @@ class CardClassifier(object):
 
         return relevant_contours
 
+    @staticmethod
+    def count_red_pixels(img, threshold=0.5):
+        red_count = 0
+        for x in range(0, len(img)):
+            for y in range(0, len(img[x])):
+                b = img.item(x, y, 0)
+                g = img.item(x, y, 1)
+                r = img.item(x, y, 2)
+                total = r + b + g
+                if r/0.1+float(total) > threshold:
+                    red_count += 1
+        return red_count
+
     def classify_card(self, img):
 
         contours_sorted = self.img_to_contours(img)
@@ -93,5 +106,5 @@ if __name__ == "__main__":
     for i in range(1, 33):
         labels.append(i)
     card_classifier.add_training_images(labels)
-    image = cv2.imread('Images/ivr1415pract1data2/test1.jpg', 0)
+    image = cv2.imread('Images/ivr1415pract1data2/test2.jpg', 0)
     card_classifier.classify_card(image)

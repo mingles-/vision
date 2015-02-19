@@ -100,6 +100,24 @@ def orb_example(img):
     plt.show()
 
 
+def normalise_image(img):
+    print img.shape
+    for x in range(0, len(img)):
+        for y in range(0, len(img[x])):
+            b = img.item(x, y, 0)
+            g = img.item(x, y, 1)
+            r = img.item(x, y, 2)
+            total = r + b + g
+            img.itemset((x, y, 0), (255.0 * b/total))
+            img.itemset((x, y, 1), (255.0 * g/total))
+            img.itemset((x, y, 2), (255.0 * r/total))
+
+    # display the image
+    plt.imshow(img)
+    plt.title("")
+    plt.show()
+
+
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train1.jpg', 0)
-    bounding_box_example(image)
+    image = cv2.imread('Images/ivr1415pract1data1/train2.jpg')
+    normalise_image(image)
