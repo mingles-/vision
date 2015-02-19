@@ -14,8 +14,9 @@ class CardClassifier(object):
         contours_sorted = self.img_to_contours(img)
 
         relevant_contours = self.find_relevant_contours(contours_sorted)
-        self.train.append(relevant_contours)
-        self.train_labels.append(label)
+        for cnt in relevant_contours:
+            self.train.append(cnt)
+            self.train_labels.append(label)
 
     @staticmethod
     def img_to_contours(img):
@@ -54,11 +55,31 @@ class CardClassifier(object):
         contours_sorted = self.img_to_contours(img)
         relevant_contours = self.find_relevant_contours(contours_sorted)
 
+        relevant_contours = np.array(relevant_contours).astype(np.float32)
+
+        train = np.array(self.train).astype(np.float32)
+        train_labels = np.array(self.train_labels).astype(np.float32)
+
+
+        # Initiate kNN, train the data, then test it with test data for k=1
+        knn = cv2.KNearest()
+        knn.train(train, train_labels)
+        ret, result, neighbours, dist = knn.find_nearest(relevant_contours, 1)
+        print result
+        # Now we check the accuracy of classification
+        # For that, compare the result with test_labels and check which are wrong
+        """
+        matches = result == test_labels
+        correct = np.count_nonzero(matches)
+        accuracy = correct*100.0/result.size
+        print "KNN - {0}% correct".format(accuracy)
+        return result
+
         # draw a rotated box around the biggest contour
         rect = cv2.minAreaRect(contours_sorted[0])
         box = cv2.cv.BoxPoints(rect)
         box = np.int0(box)
-        cv2.drawContours(img, [box], 0, (0, 0, 255), 2)
+        cv2.drawContours(img, [box], 0, (0, 0, 255), 2)"""
 
     def add_training_images(self, lbls):
         for x in range(1, len(lbls)):
@@ -72,3 +93,5 @@ if __name__ == "__main__":
     for i in range(1, 33):
         labels.append(i)
     card_classifier.add_training_images(labels)
+    image = cv2.imread('Images/ivr1415pract1data2/test1.jpg', 0)
+    card_classifier.classify_card(image)
