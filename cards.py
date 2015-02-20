@@ -17,9 +17,13 @@ class CardClassifier(object):
         :param cnt: the contour to extract from
         :return: the feature vector extracted
         """
-        feature_vector = []
         moments = cv2.moments(cnt)
-        feature_vector.append(cv2.HuMoments(moments))
+
+        area = cv2.contourArea(cnt)
+        perimeter = cv2.arcLength(cnt, True)
+        hull = cv2.convexHull(cnt)
+
+        feature_vector = [[area], [perimeter]]
         return feature_vector
 
     def get_objects_with_label(self, img, label):
@@ -34,11 +38,10 @@ class CardClassifier(object):
         contours_sorted = self.img_to_contours(img)
         relevant_contours = self.find_relevant_contours(contours_sorted)
 
-        feature_vectors = [self.get_feature_vector(cnt) for cnt in relevant_contours][0]
-        print np.array(feature_vectors).shape
+        feature_vectors = [self.get_feature_vector(cnt) for cnt in relevant_contours]
 
         for feature_vector in feature_vectors:
-            feature_vector = np.append(feature_vector, [[float(red_count)]], axis=0)
+            feature_vector = np.append(feature_vector, [[red_count]], axis=0)
             self.train.append(feature_vector)
             self.train_labels.append(label)
 
@@ -109,31 +112,28 @@ class CardClassifier(object):
         from the test set, then voting on the most occurring card.
         :param img: the image to classify
         """
-
-        contours_sorted = self.img_to_contours(img)
-
-        relevant_contours = self.find_relevant_contours(contours_sorted)
-        feature_vectors = [self.get_feature_vector(cnt)[0] for cnt in relevant_contours]
-        print np.array(feature_vectors).shape
+        to_classify = []
 
         red_count = self.count_red_pixels(img)
-        print str(red_count) + " new"
-        for j in range(0, len(feature_vectors)):
-            feature_vectors[j] = np.append(feature_vectors[j], [[float(red_count)]], axis=0)
 
-        contour_hu_moments = np.array(feature_vectors).astype(np.float32)
+        contours_sorted = self.img_to_contours(img)
+        relevant_contours = self.find_relevant_contours(contours_sorted)
+
+        feature_vectors = [self.get_feature_vector(cnt) for cnt in relevant_contours]
+
+        for feature_vector in feature_vectors:
+            feature_vector = np.append(feature_vector, [[red_count]], axis=0)
+            to_classify.append(feature_vector)
+
+        to_classify = np.array(to_classify).astype(np.float32)
 
         train = np.array(self.train).astype(np.float32)
         train_labels = np.array(self.train_labels).astype(np.float32)
 
-
-        # Initiate kNN, train the data, then test it with test data for k=1
         knn = cv2.KNearest()
         knn.train(train, train_labels)
-        ret, result, neighbours, dist = knn.find_nearest(contour_hu_moments, 1)
+        ret, result, neighbours, dist = knn.find_nearest(to_classify, 1)
         print result
-        # Now we check the accuracy of classification
-        # For that, compare the result with test_labels and check which are wrong
 
     def add_training_images(self, lbls):
         """
