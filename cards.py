@@ -12,12 +12,23 @@ class CardClassifier(object):
 
     @staticmethod
     def get_feature_vector(cnt):
-        hu_moments = []
+        """
+        Extract the feature vector of the given contour
+        :param cnt: the contour to extract from
+        :return: the feature vector extracted
+        """
+        feature_vector = []
         moments = cv2.moments(cnt)
-        hu_moments.append(cv2.HuMoments(moments))
-        return hu_moments
+        feature_vector.append(cv2.HuMoments(moments))
+        return feature_vector
 
     def get_objects_with_label(self, img, label):
+        """
+        Extract all the objects from an image and add each
+        object's feature vector to the training data
+        :param img: the image to extract from
+        :param label: the label for all objects in this image
+        """
         red_count = self.count_red_pixels(img)
 
         contours_sorted = self.img_to_contours(img)
@@ -33,6 +44,11 @@ class CardClassifier(object):
 
     @staticmethod
     def img_to_contours(img):
+        """
+        Get a list of all contours in this image sorted by area descending
+        :param img: the image to get contours from
+        :return: contours sorted by area descending
+        """
         # turn the image into binary (black and white, no grey)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (1, 1), 1000)
@@ -45,6 +61,11 @@ class CardClassifier(object):
 
     @staticmethod
     def find_relevant_contours(contours_sorted):
+        """
+        Using a heuristic, find the meaningful contours from a list of contours
+        :param contours_sorted: the full list of contours
+        :return: only the meaningful contours
+        """
         # draw all the contours who's area is between 2 thresholds
         min_area = 500
         max_area = cv2.contourArea(contours_sorted[0])/25
@@ -63,6 +84,14 @@ class CardClassifier(object):
 
     @staticmethod
     def count_red_pixels(img, threshold=0.5):
+        """
+        counts the number of red pixels in an image.
+        Red being where the ratio of red to all colors is greater than a threshold.
+        The count is weighted so to not unbalance other elements of the feature vector
+        :param img: the image
+        :param threshold:
+        :return: a weighted count of the number of red pixels
+        """
         red_count = 0
         for x in range(0, len(img)):
             for y in range(0, len(img[x])):
@@ -75,6 +104,11 @@ class CardClassifier(object):
         return 400.0 * red_count / (len(img) * len(img[0]))
 
     def classify_card(self, img):
+        """
+        Classify the image by matching each feature of the card to features
+        from the test set, then voting on the most occurring card.
+        :param img: the image to classify
+        """
 
         contours_sorted = self.img_to_contours(img)
 
@@ -102,6 +136,10 @@ class CardClassifier(object):
         # For that, compare the result with test_labels and check which are wrong
 
     def add_training_images(self, lbls):
+        """
+        Add all the cards in training set to the training data
+        :param lbls: a list of labels for the training cards
+        """
         for x in range(1, len(lbls)):
             image = cv2.imread('Images/ivr1415pract1data1/train{0}.jpg'.format(x))
             self.get_objects_with_label(image, lbls[x])
