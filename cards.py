@@ -11,7 +11,7 @@ class CardClassifier(object):
         self.train_labels = []
 
     @staticmethod
-    def get_feature_vector(cnt):
+    def get_feature_vector(cnt, img, gray_img):
         """
         Extract the feature vector of the given contour
         :param cnt: the contour to extract from
@@ -21,9 +21,21 @@ class CardClassifier(object):
 
         area = cv2.contourArea(cnt)
         perimeter = cv2.arcLength(cnt, True)
-        hull = cv2.convexHull(cnt)
 
-        feature_vector = [[area], [perimeter]]
+        hull = cv2.convexHull(cnt)
+        hull_area = cv2.contourArea(hull)
+        solidity = float(area)/hull_area
+
+        x, y, w, h = cv2.boundingRect(cnt)
+        rect_area = w*h
+        extent = float(area)/rect_area
+
+        mask = np.zeros(gray_img.shape, np.uint8)
+        mean_val = cv2.mean(img, mask=mask)
+        total_val = mean_val[0] + mean_val[1] + mean_val[2]
+        mean_red = mean_val[2]/(0.001+float(total_val))
+
+        feature_vector = [[area], [perimeter], [solidity], [extent], [mean_red]]
         return feature_vector
 
     def get_objects_with_label(self, img, label):
@@ -33,28 +45,26 @@ class CardClassifier(object):
         :param img: the image to extract from
         :param label: the label for all objects in this image
         """
-        red_count = self.count_red_pixels(img)
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        contours_sorted = self.img_to_contours(img)
+        contours_sorted = self.img_to_contours(gray_img)
         relevant_contours = self.find_relevant_contours(contours_sorted)
 
-        feature_vectors = [self.get_feature_vector(cnt) for cnt in relevant_contours]
+        feature_vectors = [self.get_feature_vector(cnt, img, gray_img) for cnt in relevant_contours]
 
         for feature_vector in feature_vectors:
-            feature_vector = np.append(feature_vector, [[red_count]], axis=0)
             self.train.append(feature_vector)
             self.train_labels.append(label)
 
     @staticmethod
-    def img_to_contours(img):
+    def img_to_contours(gray_img):
         """
         Get a list of all contours in this image sorted by area descending
         :param img: the image to get contours from
         :return: contours sorted by area descending
         """
         # turn the image into binary (black and white, no grey)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (1, 1), 1000)
+        blur = cv2.GaussianBlur(gray_img, (1, 1), 1000)
         ret, thresh = cv2.threshold(blur, 129, 255, cv2.THRESH_BINARY)
         # find all the contours in the image, all areas of joint white/black
         contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -112,20 +122,14 @@ class CardClassifier(object):
         from the test set, then voting on the most occurring card.
         :param img: the image to classify
         """
-        to_classify = []
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        red_count = self.count_red_pixels(img)
-
-        contours_sorted = self.img_to_contours(img)
+        contours_sorted = self.img_to_contours(gray_img)
         relevant_contours = self.find_relevant_contours(contours_sorted)
 
-        feature_vectors = [self.get_feature_vector(cnt) for cnt in relevant_contours]
-
-        for feature_vector in feature_vectors:
-            feature_vector = np.append(feature_vector, [[red_count]], axis=0)
-            to_classify.append(feature_vector)
-
-        to_classify = np.array(to_classify).astype(np.float32)
+        feature_vectors = [self.get_feature_vector(cnt, img, gray_img) for cnt in relevant_contours]
+        print feature_vectors
+        to_classify = np.array(feature_vectors).astype(np.float32)
 
         train = np.array(self.train).astype(np.float32)
         train_labels = np.array(self.train_labels).astype(np.float32)
