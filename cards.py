@@ -143,13 +143,18 @@ class CardClassifier(object):
     def add_training_images(self, labels):
         """
         Add all the cards in training set to the training data
-        :param lbls: a list of labels for the training cards
+        :param labels: a list of labels for the training cards
         """
         for x in range(1, len(labels)):
             img = cv2.imread('Images/ivr1415pract1data1/train{0}.jpg'.format(x))
             self.get_objects_with_label(img, labels[x])
 
     def classify_all_test_cards(self, labels):
+        """
+        Counts the number of cards in the test set which are classified correctly
+        :param labels: the labels of the test set cards
+        :return: the percent correct
+        """
         count = 0
 
         for x in range(1, len(labels)):
