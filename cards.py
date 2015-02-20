@@ -1,6 +1,7 @@
 __author__ = 'Sam Davies'
 import cv2
 import numpy as np
+from scipy import stats
 from matplotlib import pyplot as plt
 
 
@@ -128,7 +129,6 @@ class CardClassifier(object):
         relevant_contours = self.find_relevant_contours(contours_sorted)
 
         feature_vectors = [self.get_feature_vector(cnt, img, gray_img) for cnt in relevant_contours]
-        print feature_vectors
         to_classify = np.array(feature_vectors).astype(np.float32)
 
         train = np.array(self.train).astype(np.float32)
@@ -137,23 +137,38 @@ class CardClassifier(object):
         knn = cv2.KNearest()
         knn.train(train, train_labels)
         ret, result, neighbours, dist = knn.find_nearest(to_classify, 1)
-        print result
+        # return the most occurring card
+        return stats.mode(result, axis=None)[0]
 
-    def add_training_images(self, lbls):
+    def add_training_images(self, labels):
         """
         Add all the cards in training set to the training data
         :param lbls: a list of labels for the training cards
         """
-        for x in range(1, len(lbls)):
-            image = cv2.imread('Images/ivr1415pract1data1/train{0}.jpg'.format(x))
-            self.get_objects_with_label(image, lbls[x])
+        for x in range(1, len(labels)):
+            img = cv2.imread('Images/ivr1415pract1data1/train{0}.jpg'.format(x))
+            self.get_objects_with_label(img, labels[x])
+
+    def classify_all_test_cards(self, labels):
+        count = 0
+
+        for x in range(1, len(labels)):
+            img = cv2.imread('Images/ivr1415pract1data2/test{0}.jpg'.format(x))
+            if self.classify_card(img) == labels[x]:
+                count += 1
+        return 100.0 * count / len(labels)
 
 
 if __name__ == "__main__":
-    card_classifier = CardClassifier()
-    labels = []
+    c = CardClassifier()
+    training_labels = []
+    testing_labels = []
     for i in range(1, 33):
-        labels.append(i)
-    card_classifier.add_training_images(labels)
-    image = cv2.imread('Images/ivr1415pract1data2/test1.jpg')
-    card_classifier.classify_card(image)
+        training_labels.append(i)
+        testing_labels.append(33-i)
+
+    c.add_training_images(training_labels)
+    correctly_classified = c.classify_all_test_cards(testing_labels)
+    print "-------------------------------"
+    print "{0}% Correctly Classified".format(correctly_classified)
+    print "-------------------------------"
