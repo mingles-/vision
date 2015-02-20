@@ -10,16 +10,25 @@ class CardClassifier(object):
         self.train = []
         self.train_labels = []
 
+    @staticmethod
+    def get_feature_vector(cnt):
+        hu_moments = []
+        moments = cv2.moments(cnt)
+        hu_moments.append(cv2.HuMoments(moments))
+        return hu_moments
+
     def get_objects_with_label(self, img, label):
         red_count = self.count_red_pixels(img)
-        print red_count
 
         contours_sorted = self.img_to_contours(img)
-        contour_hu_moments = self.find_relevant_contour_hu_moments(contours_sorted)
+        relevant_contours = self.find_relevant_contours(contours_sorted)
 
-        for hu_moments in contour_hu_moments:
-            hu_moments = np.append(hu_moments, [[float(red_count)]], axis=0)
-            self.train.append(hu_moments)
+        feature_vectors = [self.get_feature_vector(cnt) for cnt in relevant_contours][0]
+        print np.array(feature_vectors).shape
+
+        for feature_vector in feature_vectors:
+            feature_vector = np.append(feature_vector, [[float(red_count)]], axis=0)
+            self.train.append(feature_vector)
             self.train_labels.append(label)
 
     @staticmethod
@@ -35,25 +44,22 @@ class CardClassifier(object):
         return sorted(contours, key=cv2.contourArea, reverse=True)
 
     @staticmethod
-    def find_relevant_contour_hu_moments(contours_sorted):
+    def find_relevant_contours(contours_sorted):
         # draw all the contours who's area is between 2 thresholds
         min_area = 500
         max_area = cv2.contourArea(contours_sorted[0])/25
 
-        hu_moments = []
+        relevant_contours = []
         # print "max area {0}".format(max_area)
         for cnt in contours_sorted[1:]:
             area = cv2.contourArea(cnt)
             if min_area < area < max_area:
-                # print "object area {0}".format(area)
-                # cv2.drawContours(img, [cnt], 0, (0, 255, 0), 2)
-                moments = cv2.moments(cnt)
-                hu_moments.append(cv2.HuMoments(moments))
+                relevant_contours.append(cnt)
             else:
                 if min_area > area:
                     break
 
-        return hu_moments
+        return relevant_contours
 
     @staticmethod
     def count_red_pixels(img, threshold=0.5):
@@ -71,14 +77,17 @@ class CardClassifier(object):
     def classify_card(self, img):
 
         contours_sorted = self.img_to_contours(img)
-        contour_hu_moments = self.find_relevant_contour_hu_moments(contours_sorted)
+
+        relevant_contours = self.find_relevant_contours(contours_sorted)
+        feature_vectors = [self.get_feature_vector(cnt)[0] for cnt in relevant_contours]
+        print np.array(feature_vectors).shape
 
         red_count = self.count_red_pixels(img)
         print str(red_count) + " new"
-        for j in range(0, len(contour_hu_moments)):
-            contour_hu_moments[j] = np.append(contour_hu_moments[j], [[float(red_count)]], axis=0)
+        for j in range(0, len(feature_vectors)):
+            feature_vectors[j] = np.append(feature_vectors[j], [[float(red_count)]], axis=0)
 
-        contour_hu_moments = np.array(contour_hu_moments).astype(np.float32)
+        contour_hu_moments = np.array(feature_vectors).astype(np.float32)
 
         train = np.array(self.train).astype(np.float32)
         train_labels = np.array(self.train_labels).astype(np.float32)
@@ -104,5 +113,5 @@ if __name__ == "__main__":
     for i in range(1, 33):
         labels.append(i)
     card_classifier.add_training_images(labels)
-    image = cv2.imread('Images/ivr1415pract1data2/test19.jpg')
+    image = cv2.imread('Images/ivr1415pract1data2/test1.jpg')
     card_classifier.classify_card(image)
