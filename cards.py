@@ -39,7 +39,8 @@ class CardClassifier(object):
         total_val = mean_val[0] + mean_val[1] + mean_val[2]
         mean_red = mean_val[2]/(0.001+float(total_val))
 
-        feature_vector = [area, perimeter, solidity, extent, mean_red]
+        # feature_vector = [area, perimeter, solidity, extent, mean_red]
+        feature_vector = [[area], [perimeter], [solidity], [extent], [mean_red]]
         # print feature_vector
         # print "------------------"
         return feature_vector
@@ -160,13 +161,13 @@ class CardClassifier(object):
         train_labels = np.array(self.train_labels).astype(np.float32)
 
         if to_classify.shape != (0, ):
-            gnb = GaussianNB()
-            gnb.fit(train, train_labels)
-            result = gnb.predict(to_classify)
-
-            # knn = cv2.KNearest()
-            # knn.train(train, train_labels)
-            # ret, result, neighbours, dist = knn.find_nearest(to_classify, 1)
+            # gnb = GaussianNB()
+            # gnb.fit(train, train_labels)
+            # result = gnb.predict(to_classify)
+            #
+            knn = cv2.KNearest()
+            knn.train(train, train_labels)
+            ret, result, neighbours, dist = knn.find_nearest(to_classify, 1)
             # return the most occurring card
             return stats.mode(result, axis=None)[0]
         else:
