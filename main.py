@@ -2,6 +2,7 @@ import cv2
 
 import numpy as np
 from matplotlib import pyplot as plt
+import cards
 
 
 def threshes_example(img):
@@ -73,6 +74,7 @@ def surf_example(img):
 
     # Find keypoints and descriptors directly
     kp, des = surf.detectAndCompute(img, None)
+    print des
 
     img = cv2.drawKeypoints(img, kp)
      # display the image
@@ -118,6 +120,20 @@ def normalise_image(img):
     plt.show()
 
 
+def features_example(img):
+    c = cards.CardClassifier()
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    contours_sorted = c.img_to_contours(gray_img)
+    relevant_contours = c.find_relevant_contours(contours_sorted)
+
+    for cnt in relevant_contours:
+        cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
+    plt.imshow(img)
+    plt.title("Features")
+    plt.show()
+
+
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train2.jpg')
-    normalise_image(image)
+    image = cv2.imread('Images/ivr1415pract1data1/train1.jpg')
+    features_example(image)

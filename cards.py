@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from scipy import stats
 from matplotlib import pyplot as plt
+from sklearn.naive_bayes import GaussianNB
+import operator
 
 
 class CardClassifier(object):
@@ -32,11 +34,14 @@ class CardClassifier(object):
         extent = float(area)/rect_area
 
         mask = np.zeros(gray_img.shape, np.uint8)
+        cv2.drawContours(mask, [cnt], 0, 255, -1)
         mean_val = cv2.mean(img, mask=mask)
         total_val = mean_val[0] + mean_val[1] + mean_val[2]
         mean_red = mean_val[2]/(0.001+float(total_val))
 
-        feature_vector = [[area], [perimeter], [solidity], [extent], [mean_red]]
+        feature_vector = [area, perimeter, solidity, extent, mean_red]
+        # print feature_vector
+        # print "------------------"
         return feature_vector
 
     def get_objects_with_label(self, img, label):
@@ -57,11 +62,10 @@ class CardClassifier(object):
             self.train.append(feature_vector)
             self.train_labels.append(label)
 
-    @staticmethod
-    def img_to_contours(gray_img):
+    def img_to_contours(self, gray_img):
         """
         Get a list of all contours in this image sorted by area descending
-        :param img: the image to get contours from
+        :param gray_img: the image to get contours from
         :return: contours sorted by area descending
         """
         # turn the image into binary (black and white, no grey)
@@ -70,8 +74,27 @@ class CardClassifier(object):
         # find all the contours in the image, all areas of joint white/black
         contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+        card_cnt_index, card_cnt = self.max_contour_area_index(contours)
+
+        # removed all non childs of the card
+        good_cnts = [card_cnt]
+        for n in range(0, len(contours)):
+            # make sure that the contours parent is the card
+            if hierarchy[0][n][3] == card_cnt_index:
+                good_cnts.append(contours[n])
+
         # figure out the largest contour areas
-        return sorted(contours, key=cv2.contourArea, reverse=True)
+        return sorted(good_cnts, key=cv2.contourArea, reverse=True)
+
+    @staticmethod
+    def max_contour_area_index(contours):
+        max_area = 0
+        max_area_index = 0
+        for b in range(0, len(contours)):
+            if cv2.contourArea(contours[b]) > max_area:
+                max_area = cv2.contourArea(contours[b])
+                max_area_index = b
+        return max_area_index, contours[max_area_index]
 
     @staticmethod
     def find_relevant_contours(contours_sorted):
@@ -80,21 +103,23 @@ class CardClassifier(object):
         :param contours_sorted: the full list of contours
         :return: only the meaningful contours
         """
-        # draw all the contours who's area is between 2 thresholds
-        min_area = 500
-        max_area = cv2.contourArea(contours_sorted[0])/25
+        if contours_sorted:
+            # draw all the contours who's area is between 2 thresholds
+            min_area = 500
+            max_area = cv2.contourArea(contours_sorted[0])/25
 
-        relevant_contours = []
-        # print "max area {0}".format(max_area)
-        for cnt in contours_sorted[1:]:
-            area = cv2.contourArea(cnt)
-            if min_area < area < max_area:
-                relevant_contours.append(cnt)
-            else:
-                if min_area > area:
-                    break
-
-        return relevant_contours
+            relevant_contours = []
+            # print "max area {0}".format(max_area)
+            for cnt in contours_sorted[1:]:
+                area = cv2.contourArea(cnt)
+                if min_area < area < max_area:
+                    relevant_contours.append(cnt)
+                else:
+                    if min_area > area:
+                        break
+            return relevant_contours
+        else:
+            return []
 
     @staticmethod
     def count_red_pixels(img, threshold=0.5):
@@ -134,11 +159,18 @@ class CardClassifier(object):
         train = np.array(self.train).astype(np.float32)
         train_labels = np.array(self.train_labels).astype(np.float32)
 
-        knn = cv2.KNearest()
-        knn.train(train, train_labels)
-        ret, result, neighbours, dist = knn.find_nearest(to_classify, 1)
-        # return the most occurring card
-        return stats.mode(result, axis=None)[0]
+        if to_classify.shape != (0, ):
+            gnb = GaussianNB()
+            gnb.fit(train, train_labels)
+            result = gnb.predict(to_classify)
+
+            # knn = cv2.KNearest()
+            # knn.train(train, train_labels)
+            # ret, result, neighbours, dist = knn.find_nearest(to_classify, 1)
+            # return the most occurring card
+            return stats.mode(result, axis=None)[0]
+        else:
+            return -1
 
     def add_training_images(self, labels):
         """
@@ -159,7 +191,8 @@ class CardClassifier(object):
 
         for x in range(1, len(labels)):
             img = cv2.imread('Images/ivr1415pract1data2/test{0}.jpg'.format(x))
-            if self.classify_card(img) == labels[x]:
+            classification = self.classify_card(img)
+            if classification != 1 and classification == labels[x]:
                 count += 1
         return 100.0 * count / len(labels)
 
