@@ -135,5 +135,5 @@ def features_example(img):
 
 
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train1.jpg')
+    image = cv2.imread('Images/ivr1415pract1data1/train13.jpg')
     features_example(image)

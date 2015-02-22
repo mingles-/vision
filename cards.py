@@ -37,7 +37,12 @@ class CardClassifier(object):
         cv2.drawContours(mask, [cnt], 0, 255, -1)
         mean_val = cv2.mean(img, mask=mask)
 
-        feature_vector = [solidity, mean_val[2]]
+        hu_moment = cv2.HuMoments(moments)
+        #print hu_moment
+
+
+        compactness = perimeter * perimeter / (4 * np.pi * area)
+        feature_vector = [compactness, mean_val[2]]
         return feature_vector
 
     def get_objects_with_label(self, img, label):
@@ -57,8 +62,8 @@ class CardClassifier(object):
         for feature_vector in feature_vectors:
             self.train.append(feature_vector)
             self.train_labels.append(label)
-            print "{0} -- label {1}".format(feature_vector, label)
-            print "------------------"
+            # print "{0} -- label {1}".format(feature_vector, label)
+            # print "------------------"
 
     def img_to_contours(self, gray_img):
         """
@@ -168,13 +173,37 @@ class CardClassifier(object):
 
             print("-----")
             # return the most occurring card
-            for result in results:
-                print "class: {0} -- suit: {1}".format(result, (result) % 4)
+            suit = []
+            card_number = []
 
-            print("Mode: "+ str((stats.mode(results, axis=None)[0]) % 4))
-            return stats.mode(results, axis=None)[0]
+
+            for result in results:
+                digit = self.convert_class_to_digit(result)
+                print "class: {0} -- suit: {1} -- digit: {2}".format(result, result % 4, digit)
+                suit.append(result % 4)
+                card_number.append(digit)
+
+            single_suit = stats.mode(suit, axis=None)[0]
+            single_card_number = stats.mode(card_number, axis=None)[0]
+
+            single_class = self.convert_suit_and_num_to_card(single_card_number, single_suit)
+            print "AVERAGE class: {0} --  suit: {1} --  digit: {2}"\
+                .format(single_class[0], single_suit[0], single_card_number[0])
+            return single_class
+            #print("Mode: "+ str((stats.mode(results, axis=None)[0]) % 4))
+            #return stats.mode(results, axis=None)[0]
         else:
             return -1
+
+    @staticmethod
+    def convert_class_to_digit(card_num):
+        return ((int(card_num) - 1)/4) + 2
+
+    @staticmethod
+    def convert_suit_and_num_to_card(card_num, suit):
+        card_num_bit = (card_num - 1) * 4
+        mod_bit = ((suit - 1) % 4) + 1
+        return card_num_bit - (4 - mod_bit)
 
     def add_training_images(self, labels):
         """
