@@ -36,13 +36,8 @@ class CardClassifier(object):
         mask = np.zeros(gray_img.shape, np.uint8)
         cv2.drawContours(mask, [cnt], 0, 255, -1)
         mean_val = cv2.mean(img, mask=mask)
-        total_val = mean_val[0] + mean_val[1] + mean_val[2]
-        mean_red = mean_val[2]/(0.001+float(total_val))
 
-        # feature_vector = [area, perimeter, solidity, extent, mean_red]
-        feature_vector = [[area], [perimeter], [solidity], [extent], [mean_red]]
-        # print feature_vector
-        # print "------------------"
+        feature_vector = [solidity, mean_val[2]]
         return feature_vector
 
     def get_objects_with_label(self, img, label):
@@ -62,6 +57,8 @@ class CardClassifier(object):
         for feature_vector in feature_vectors:
             self.train.append(feature_vector)
             self.train_labels.append(label)
+            print "{0} -- label {1}".format(feature_vector, label)
+            print "------------------"
 
     def img_to_contours(self, gray_img):
         """
@@ -161,15 +158,21 @@ class CardClassifier(object):
         train_labels = np.array(self.train_labels).astype(np.float32)
 
         if to_classify.shape != (0, ):
-            # gnb = GaussianNB()
-            # gnb.fit(train, train_labels)
-            # result = gnb.predict(to_classify)
+            gnb = GaussianNB()
+            gnb.fit(train, train_labels)
+            results = gnb.predict(to_classify)
             #
-            knn = cv2.KNearest()
-            knn.train(train, train_labels)
-            ret, result, neighbours, dist = knn.find_nearest(to_classify, 1)
+            #knn = cv2.KNearest()
+            #knn.train(train, train_labels)
+            #ret, results, neighbours, dist = knn.find_nearest(to_classify, 1)
+
+            print("-----")
             # return the most occurring card
-            return stats.mode(result, axis=None)[0]
+            for result in results:
+                print "class: {0} -- suit: {1}".format(result, (result) % 4)
+
+            print("Mode: "+ str((stats.mode(results, axis=None)[0]) % 4))
+            return stats.mode(results, axis=None)[0]
         else:
             return -1
 
@@ -180,7 +183,7 @@ class CardClassifier(object):
         """
         for x in range(1, len(labels)):
             img = cv2.imread('Images/ivr1415pract1data1/train{0}.jpg'.format(x))
-            self.get_objects_with_label(img, labels[x])
+            self.get_objects_with_label(img, labels[x-1])
 
     def classify_all_test_cards(self, labels):
         """
