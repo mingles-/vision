@@ -40,10 +40,12 @@ class CardClassifier(object):
         hu_moment = cv2.HuMoments(moments)
         #print hu_moment
 
+        M = cv2.moments(cnt)
+        cy = int(M['m01']/M['m00'])
 
         compactness = perimeter * perimeter / (4 * np.pi * area)
         feature_vector = [compactness, mean_val[2]]
-        return feature_vector
+        return feature_vector, cy
 
     def get_objects_with_label(self, img, label):
         """
