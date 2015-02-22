@@ -40,12 +40,10 @@ class CardClassifier(object):
         hu_moment = cv2.HuMoments(moments)
         #print hu_moment
 
-        M = cv2.moments(cnt)
-        cy = int(M['m01']/M['m00'])
 
         compactness = perimeter * perimeter / (4 * np.pi * area)
         feature_vector = [compactness, mean_val[2]]
-        return feature_vector, cy
+        return feature_vector
 
     def get_objects_with_label(self, img, label):
         """
@@ -227,7 +225,7 @@ class CardClassifier(object):
         for x in range(1, len(labels)):
             img = cv2.imread('Images/ivr1415pract1data2/test{0}.jpg'.format(x))
             classification = self.classify_card(img)
-            if classification != 1 and classification == labels[x]:
+            if classification != -1 and classification == labels[x-1]:
                 count += 1
         return 100.0 * count / len(labels)
 
@@ -236,9 +234,12 @@ if __name__ == "__main__":
     c = CardClassifier()
     training_labels = []
     testing_labels = []
-    for i in range(1, 33):
-        training_labels.append(i)
-        testing_labels.append(33-i)
+    for i in range(0, 32):
+        training_labels.append(i+1)
+        print (i+1)
+        new_num = (29 - (4 * (i/4))) + (i % 4)
+        #print new_num
+        testing_labels.append(new_num)
 
     c.add_training_images(training_labels)
     correctly_classified = c.classify_all_test_cards(testing_labels)
