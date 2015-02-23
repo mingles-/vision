@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import cards
+from count_symbols import CountSymbols
+from featuriser import Featuriser
 
 
 def threshes_example(img):
@@ -16,7 +18,7 @@ def threshes_example(img):
     images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]
 
     for i in xrange(6):
-        plt.subplot(2, 3, i+1), plt.imshow(images[i], 'gray')
+        plt.subplot(2, 3, i + 1), plt.imshow(images[i], 'gray')
         plt.title(titles[i])
         plt.xticks([]), plt.yticks([])
 
@@ -61,7 +63,7 @@ def sift_example(img):
     kp = sift.detect(img, None)
 
     img = cv2.drawKeypoints(img, kp)
-     # display the image
+    # display the image
     plt.imshow(img)
     plt.title("SIFT image")
     plt.show()
@@ -77,7 +79,7 @@ def surf_example(img):
     print des
 
     img = cv2.drawKeypoints(img, kp)
-     # display the image
+    # display the image
     plt.imshow(img)
     plt.title("SURF image")
     plt.show()
@@ -96,7 +98,7 @@ def orb_example(img):
     # draw only keypoints location, not size and orientation
     img2 = cv2.drawKeypoints(img, kp, color=(0, 255, 0), flags=0)
 
-     # display the image
+    # display the image
     plt.imshow(img2)
     plt.title("ORB image")
     plt.show()
@@ -110,9 +112,9 @@ def normalise_image(img):
             g = img.item(x, y, 1)
             r = img.item(x, y, 2)
             total = r + b + g
-            img.itemset((x, y, 0), (255.0 * b/total))
-            img.itemset((x, y, 1), (255.0 * g/total))
-            img.itemset((x, y, 2), (255.0 * r/total))
+            img.itemset((x, y, 0), (255.0 * b / total))
+            img.itemset((x, y, 1), (255.0 * g / total))
+            img.itemset((x, y, 2), (255.0 * r / total))
 
     # display the image
     plt.imshow(img)
@@ -121,37 +123,9 @@ def normalise_image(img):
 
 
 def features_example(img):
-    c = cards.CardClassifier()
-    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    f = Featuriser(img)
 
-    contours_sorted, contours, hierarchy = c.img_to_contours(gray_img)
-
-    min_area = 500
-    max_area = cv2.contourArea(contours_sorted[0])/25
-    relevant_contours = c.find_relevant_contours(contours_sorted, min_area, max_area)
-
-    card_cnt_index, card_cnt = c.max_contour_area_index(contours_sorted)
-    inner_cnt_index, inner_cnt = c.max_contour_area_index(contours_sorted, excluding=[card_cnt_index])
-
-    # remove no childs of inner box
-    good_cnts = [inner_cnt]
-    for n in range(0, len(contours)):
-        # make sure that the contours parent is inner box
-        if hierarchy[0][n][3] == inner_cnt_index:
-            good_cnts.append(contours[n])
-
-    good_cnts = sorted(good_cnts, key=cv2.contourArea, reverse=True)
-    print len(good_cnts)
-
-    min_area = 250
-    max_area = cv2.contourArea(inner_cnt)/4
-    inner_contours = c.find_relevant_contours(good_cnts, min_area, max_area)
-    print len(inner_contours)
-
-    cv2.drawContours(img, [inner_cnt], 0, (0, 255, 0), 3)
-
-    for cnt in inner_contours:
-        cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
+    relevant_contours = f.relevant_contours
 
     for cnt in relevant_contours:
         cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
@@ -160,6 +134,33 @@ def features_example(img):
     plt.show()
 
 
+def count_symbols_example(img):
+    f1 = CountSymbols(img)
+    print f1.symbol_count
+
+    for cnt in f1.symbol_contours:
+        cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
+    plt.imshow(img)
+    plt.title("Features")
+    plt.show()
+
+
+def adaptive_threshold_example(img):
+    img = cv2.medianBlur(img, 5)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    thresh = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    for cnt in contours:
+        cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
+
+    plt.imshow(img)
+    plt.title("Features")
+    plt.show()
+
+
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train2.jpg')
-    features_example(image)
+    image = cv2.imread('Images/ivr1415pract1data1/train1.jpg')
+    adaptive_threshold_example(image)
