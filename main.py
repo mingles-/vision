@@ -124,8 +124,34 @@ def features_example(img):
     c = cards.CardClassifier()
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    contours_sorted = c.img_to_contours(gray_img)
-    relevant_contours = c.find_relevant_contours(contours_sorted)
+    contours_sorted, contours, hierarchy = c.img_to_contours(gray_img)
+
+    min_area = 500
+    max_area = cv2.contourArea(contours_sorted[0])/25
+    relevant_contours = c.find_relevant_contours(contours_sorted, min_area, max_area)
+
+    card_cnt_index, card_cnt = c.max_contour_area_index(contours_sorted)
+    inner_cnt_index, inner_cnt = c.max_contour_area_index(contours_sorted, excluding=[card_cnt_index])
+
+    # remove no childs of inner box
+    good_cnts = [inner_cnt]
+    for n in range(0, len(contours)):
+        # make sure that the contours parent is inner box
+        if hierarchy[0][n][3] == inner_cnt_index:
+            good_cnts.append(contours[n])
+
+    good_cnts = sorted(good_cnts, key=cv2.contourArea, reverse=True)
+    print len(good_cnts)
+
+    min_area = 250
+    max_area = cv2.contourArea(inner_cnt)/4
+    inner_contours = c.find_relevant_contours(good_cnts, min_area, max_area)
+    print len(inner_contours)
+
+    cv2.drawContours(img, [inner_cnt], 0, (0, 255, 0), 3)
+
+    for cnt in inner_contours:
+        cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
 
     for cnt in relevant_contours:
         cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
@@ -135,5 +161,5 @@ def features_example(img):
 
 
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train13.jpg')
+    image = cv2.imread('Images/ivr1415pract1data1/train2.jpg')
     features_example(image)
