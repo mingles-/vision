@@ -62,6 +62,5 @@ class CountSymbolsTest(unittest.TestCase):
         self.assertEquals(f1.symbol_count, 3+4)
 
 
-
 if __name__ == "__main__":
     unittest.main()

@@ -14,7 +14,23 @@ class CountSymbols(object):
 
         contours, hierarchy = self.image_to_contours()
 
+        card_index, card_contour = Featuriser.max_contour_area_index(contours)
 
+        # self.draw_contours(img, [card_contour])
+        self.min_area = 0.03 * cv2.contourArea(card_contour)
+        self.max_area = 0.005 * cv2.contourArea(card_contour)
+        print "card area " + str(cv2.contourArea(card_contour))
+        print self.min_area
+        print self.max_area
+
+        # inner_index, inner_contour = self.find_inner_contour(con# tours)
+
+        good_contours = self.remove_non_child(card_index, contours, hierarchy)
+        good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
+        print "num good contours: " + str(len(good_contours))
+
+        self.symbol_count, self.symbol_contours = self.count_symbol_contours(good_contours)
+        print "------"
 
     """def find_inner_contour(self, conimages):
     imagecard_index, card_contour = Featuriser.max_contour_area_index(coreturn uter1_contour = Featuriser.max_contour_area_index(contoimage excluding=[card_#index])
