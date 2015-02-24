@@ -19,7 +19,7 @@ class ContourFinder(object):
         # self.draw_contours(img, [card_contour])
         card_area = cv2.contourArea(card_contour)
         self.min_area = 0.07 * cv2.contourArea(card_contour)
-        self.max_area = 0.5 * cv2.contourArea(card_contour)
+        self.max_area = 0.6 * cv2.contourArea(card_contour)
 
         good_contours = self.remove_non_child([0], contours, hierarchy)
 
@@ -70,6 +70,7 @@ class ContourFinder(object):
                     symbol_contours.append(cnt)
                 else:
                     break
+        # self.draw_contours(self.grey_image, symbol_contours)
         return symbol_contours
 
     @staticmethod
