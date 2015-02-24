@@ -45,17 +45,10 @@ class CountSymbolsTest(unittest.TestCase):
 
     def test_count_symobols(self):
         self.check_train_card(1, False)
-
         self.check_train_card(32, False)
+        # self.check_train_card(18, False)
 
-        self.check_train_card(18, False)
-
-        card_5 = cv2.imread('Images/ivr1415pract1data1/train5.jpg')
-        f1 = CountSymbols(card_5)
-        # f1.draw_contours(card_5, f1.symbol_contours)
-        self.assertEquals(f1.symbol_count, 3+4)
-
-        self.check_test_card(2, True)
+        self.check_train_card(27, True)
 
     def check_train_card(self, card_num, to_draw):
         self.check_card('Images/ivr1415pract1data1/train', card_num, card_num, to_draw)

@@ -168,5 +168,5 @@ def adaptive_threshold_example(img):
 
 
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data2/test2.jpg')
-    bounding_box_example(image)
+    image = cv2.imread('Images/ivr1415pract1data1/train27.jpg')
+    adaptive_threshold_example(image)
