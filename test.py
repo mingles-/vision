@@ -46,6 +46,7 @@ class CountSymbolsTest(unittest.TestCase):
     def test_count_symobols(self):
         card_1 = cv2.imread('Images/ivr1415pract1data1/train1.jpg')
         f1 = CountSymbols(card_1)
+        f1.draw_contours(card_1, f1.symbol_contours)
         self.assertEquals(f1.symbol_count, 2+4)
 
         card_32 = cv2.imread('Images/ivr1415pract1data1/train32.jpg')
@@ -55,10 +56,12 @@ class CountSymbolsTest(unittest.TestCase):
 
         card_18 = cv2.imread('Images/ivr1415pract1data1/train18.jpg')
         f1 = CountSymbols(card_18)
+        f1.draw_contours(card_18, f1.symbol_contours)
         self.assertEquals(f1.symbol_count, 6+4)
 
         card_5 = cv2.imread('Images/ivr1415pract1data1/train5.jpg')
         f1 = CountSymbols(card_5)
+        f1.draw_contours(card_5, f1.symbol_contours)
         self.assertEquals(f1.symbol_count, 3+4)
 
 

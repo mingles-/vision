@@ -136,11 +136,13 @@ def features_example(img):
 
 def count_symbols_example(img):
     f1 = CountSymbols(img)
-    print f1.symbol_count
+    """print f1.symbol_count
 
     for cnt in f1.symbol_contours:
-        cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)
-    plt.imshow(img)
+        cv2.drawContours(img, [cnt], 0, (0, 255, 0), 3)"""
+    blur = cv2.medianBlur(f1.grey_image, 5)
+    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    plt.imshow(thresh)
     plt.title("Features")
     plt.show()
 
@@ -162,5 +164,5 @@ def adaptive_threshold_example(img):
 
 
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train1.jpg')
+    image = cv2.imread('Images/ivr1415pract1data1/train18.jpg')
     adaptive_threshold_example(image)

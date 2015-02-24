@@ -14,27 +14,29 @@ class CountSymbols(object):
 
         contours, hierarchy = self.image_to_contours()
 
-        card_index, card_contour = Featuriser.max_contour_area_index(contours)
+        card_index, card_contour = self.find_card_contour(contours)
 
         # self.draw_contours(img, [card_contour])
-        self.min_area = 0.03 * cv2.contourArea(card_contour)
-        self.max_area = 0.005 * cv2.contourArea(card_contour)
+        self.min_area = 0.07 * cv2.contourArea(card_contour)
+        self.max_area = 0.5 * cv2.contourArea(card_contour)
         print "card area " + str(cv2.contourArea(card_contour))
-        print self.min_area
-        print self.max_area
+        print "min " + str(self.min_area)
+        print "max " + str(self.max_area)
 
         # inner_index, inner_contour = self.find_inner_contour(con# tours)
 
-        good_contours = self.remove_non_child(card_index, contours, hierarchy)
-        good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
+        # good_contours = self.remove_non_child(card_index, contours, hierarchy)
+        good_contours = sorted(contours, key=cv2.contourArea, reverse=True)
         print "num good contours: " + str(len(good_contours))
+
+        self.draw_contours(img, good_contours)
 
         self.symbol_count, self.symbol_contours = self.count_symbol_contours(good_contours)
         print "------"
 
-    """def find_inner_contour(self, conimages):
-    imagecard_index, card_contour = Featuriser.max_contour_area_index(coreturn uter1_contour = Featuriser.max_contour_area_index(contoimage excluding=[card_#index])
-        return Featuriser.max_contour_area_index(contoimage excluding=[crd_indexuter1_index])"""
+    def find_card_contour(self, contours):
+        image_index, image_contour = Featuriser.max_contour_area_index(contours)
+        return Featuriser.max_contour_area_index(contours, excluding=[image_index])
 
     def image_to_contours(self):
         # turn the image into binary (black and white, no grey)
@@ -43,7 +45,7 @@ class CountSymbols(object):
         # find all the contours in the image, all areas of joint white/black
         return cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    @staticmethod
+    """@staticmethod
     def remove_non_child(parent_index, contours, hierarchy):
         # removed all non childs of the card
         good_cnts = []
@@ -51,14 +53,14 @@ class CountSymbols(object):
             # make sure that the contours parent is the card
             if hierarchy[0][n][3] == parent_index:
                 good_cnts.append(contours[n])
-        return good_cnts
+        return good_cnts"""
 
     def count_symbol_contours(self, contours):
         symbol_contours = []
 
         for cnt in contours:
+            print "symbol area of " + str(cv2.contourArea(cnt))
             if self.max_area > cv2.contourArea(cnt):
-                print "symbol area of " + str(cv2.contourArea(cnt))
                 if cv2.contourArea(cnt) > self.min_area:
                     symbol_contours.append(cnt)
                 else:
