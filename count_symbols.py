@@ -25,12 +25,11 @@ class CountSymbols(object):
 
         # inner_index, inner_contour = self.find_inner_contour(con# tours)
 
-        # good_contours = self.remove_non_child(card_index, contours, hierarchy)
-        good_contours = sorted(contours, key=cv2.contourArea, reverse=True)
+        good_contours = self.remove_non_child(0, contours, hierarchy)
+        good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
         print "num good contours: " + str(len(good_contours))
 
         self.draw_contours(img, good_contours)
-
         self.symbol_count, self.symbol_contours = self.count_symbol_contours(good_contours)
         print "------"
 
@@ -45,7 +44,7 @@ class CountSymbols(object):
         # find all the contours in the image, all areas of joint white/black
         return cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    """@staticmethod
+    @staticmethod
     def remove_non_child(parent_index, contours, hierarchy):
         # removed all non childs of the card
         good_cnts = []
@@ -53,7 +52,7 @@ class CountSymbols(object):
             # make sure that the contours parent is the card
             if hierarchy[0][n][3] == parent_index:
                 good_cnts.append(contours[n])
-        return good_cnts"""
+        return good_cnts
 
     def count_symbol_contours(self, contours):
         symbol_contours = []
