@@ -1,10 +1,6 @@
 __author__ = 'Sam Davies'
 import cv2
 import numpy as np
-from scipy import stats
-from matplotlib import pyplot as plt
-from sklearn.naive_bayes import GaussianNB
-import operator
 
 
 class Featuriser(object):

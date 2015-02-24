@@ -1,11 +1,10 @@
-from featuriser import Featuriser
+import cv2
 from matplotlib import pyplot as plt
 
-__author__ = 'Sam Davies'
-import cv2
+__author__ = 'Sam Davies and Mingles'
 
 
-class CountSymbols(object):
+class ContourFinder(object):
 
     def __init__(self, img):
         img = cv2.medianBlur(img, 5)
@@ -19,23 +18,22 @@ class CountSymbols(object):
         # self.draw_contours(img, [card_contour])
         self.min_area = 0.07 * cv2.contourArea(card_contour)
         self.max_area = 0.5 * cv2.contourArea(card_contour)
-        print "card area " + str(cv2.contourArea(card_contour))
-        print "min " + str(self.min_area)
-        print "max " + str(self.max_area)
+        # print "card area " + str(cv2.contourArea(card_contour))
+        # print "min " + str(self.min_area)
+        # print "max " + str(self.max_area)
 
         # inner_index, inner_contour = self.find_inner_contour(con# tours)
 
         good_contours = self.remove_non_child(0, contours, hierarchy)
-        good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
-        print "num good contours: " + str(len(good_contours))
+        self.good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
+        # print "num good contours: " + str(len(good_contours))
 
-        self.draw_contours(img, good_contours)
-        self.symbol_count, self.symbol_contours = self.count_symbol_contours(good_contours)
-        print "------"
+        # self.draw_contours(img, good_contours)
+        self.symbol_contours = self.find_symbol_contours(self.good_contours)
 
     def find_card_contour(self, contours):
-        image_index, image_contour = Featuriser.max_contour_area_index(contours)
-        return Featuriser.max_contour_area_index(contours, excluding=[image_index])
+        image_index, image_contour = self.max_contour_area_index(contours)
+        return self.max_contour_area_index(contours, excluding=[image_index])
 
     def image_to_contours(self):
         # turn the image into binary (black and white, no grey)
@@ -54,17 +52,27 @@ class CountSymbols(object):
                 good_cnts.append(contours[n])
         return good_cnts
 
-    def count_symbol_contours(self, contours):
+    def find_symbol_contours(self, contours):
         symbol_contours = []
 
         for cnt in contours:
-            print "symbol area of " + str(cv2.contourArea(cnt))
+            # print "symbol area of " + str(cv2.contourArea(cnt))
             if self.max_area > cv2.contourArea(cnt):
                 if cv2.contourArea(cnt) > self.min_area:
                     symbol_contours.append(cnt)
                 else:
                     break
-        return len(symbol_contours), symbol_contours
+        return symbol_contours
+
+    @staticmethod
+    def max_contour_area_index(contours, excluding=[]):
+        max_area = 0
+        max_area_index = 0
+        for b in range(0, len(contours)):
+            if cv2.contourArea(contours[b]) > max_area and b not in excluding:
+                max_area = cv2.contourArea(contours[b])
+                max_area_index = b
+        return max_area_index, contours[max_area_index]
 
     @staticmethod
     def draw_contours(card, contours):

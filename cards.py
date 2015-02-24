@@ -1,3 +1,4 @@
+from count_symbols import CountSymbols
 from featuriser import Featuriser
 
 __author__ = 'Sam Davies'
@@ -49,26 +50,21 @@ class CardClassifier(object):
             gnb.fit(train, train_labels)
             results = gnb.predict(to_classify)
 
-            print("-----")
             suit = []
-            card_number = []
-
 
             for result in results:
                 digit = self.convert_class_to_digit(result)
-                print "class: {0} -- suit: {1} -- digit: {2}".format(result, result % 4, digit)
+                print "class: {0} -- suit: {1}".format(result, result % 4)
                 suit.append(result % 4)
-                card_number.append(digit)
+
 
             single_suit = stats.mode(suit, axis=None)[0]
-            single_card_number = stats.mode(card_number, axis=None)[0]
+            single_card_number = CountSymbols(img).symbol_count - 4
 
             single_class = self.convert_suit_and_num_to_card(single_card_number, single_suit)
             print "AVERAGE class: {0} --  suit: {1} --  digit: {2}"\
-                .format(single_class[0], single_suit[0], single_card_number[0])
+                .format(single_class[0], single_suit[0], single_card_number)
             return single_class
-            #print("Mode: "+ str((stats.mode(results, axis=None)[0]) % 4))
-            #return stats.mode(results, axis=None)[0]
         else:
             return -1
 
@@ -99,10 +95,13 @@ class CardClassifier(object):
         """
         count = 0
 
-        for x in range(1, len(labels)):
+        for x in range(1, len(labels)+1):
             img = cv2.imread('Images/ivr1415pract1data2/test{0}.jpg'.format(x))
+            label = labels[x-1]
+            print("-----")
+            print "Classifying card " + str(label)
             classification = self.classify_card(img)
-            if classification != -1 and classification == labels[x-1]:
+            if classification != -1 and classification == label:
                 count += 1
         return 100.0 * count / len(labels)
 
@@ -113,7 +112,6 @@ if __name__ == "__main__":
     testing_labels = []
     for i in range(0, 32):
         training_labels.append(i+1)
-        print (i+1)
         new_num = (29 - (4 * (i/4))) + (i % 4)
         #print new_num
         testing_labels.append(new_num)
