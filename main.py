@@ -41,7 +41,8 @@ def contour_example(img):
 
 def bounding_box_example(img):
     # turn the image into binary (black and white, no grey)
-    ret, thresh = cv2.threshold(img, 129, 255, cv2.THRESH_BINARY)
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, thresh = cv2.threshold(gray_img, 129, 255, cv2.THRESH_BINARY)
     # find all the contours in the image, all areas of joint white/black
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -50,6 +51,7 @@ def bounding_box_example(img):
 
     # draw a rotated box around the biggest contour
     rect = cv2.minAreaRect(card_contour)
+    print rect
     box = cv2.cv.BoxPoints(rect)
     box = np.int0(box)
     cv2.drawContours(img, [box], 0, (0, 0, 255), 2)
@@ -167,4 +169,4 @@ def adaptive_threshold_example(img):
 
 if __name__ == "__main__":
     image = cv2.imread('Images/ivr1415pract1data2/test2.jpg')
-    threshes_example(image)
+    bounding_box_example(image)

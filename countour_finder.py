@@ -25,6 +25,7 @@ class ContourFinder(object):
         # inner_index, inner_contour = self.find_inner_contour(con# tours)
 
         good_contours = self.remove_non_child(0, contours, hierarchy)
+        good_contours = self.remove_bad_contours(good_contours)
         self.good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
         # print "num good contours: " + str(len(good_contours))
 
@@ -82,3 +83,16 @@ class ContourFinder(object):
         plt.imshow(card)
         plt.title("draw_contours")
         plt.show()
+
+    def remove_bad_contours(self, contours):
+
+        good_contours = []
+
+        # remove stretched shapes
+        for cnt in contours:
+            rect = cv2.minAreaRect(cnt)
+            width = rect[1][0]
+            height = rect[1][1]
+            if 3 > (width/height) > (1.0/3):
+                good_contours.append(cnt)
+        return good_contours
