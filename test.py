@@ -44,30 +44,34 @@ class CountSymbolsTest(unittest.TestCase):
         pass
 
     def test_count_symobols(self):
-        card_1 = cv2.imread('Images/ivr1415pract1data1/train1.jpg')
-        f1 = CountSymbols(card_1)
-        # f1.draw_contours(card_1, f1.symbol_contours)
-        self.assertEquals(f1.symbol_count, 2+4)
+        self.check_train_card(1, False)
 
-        card_32 = cv2.imread('Images/ivr1415pract1data1/train32.jpg')
-        f1 = CountSymbols(card_32)
-        # f1.draw_contours(card_32, f1.symbol_contours)
-        self.assertEquals(f1.symbol_count, 9+4)
+        self.check_train_card(32, False)
 
-        card_18 = cv2.imread('Images/ivr1415pract1data1/train18.jpg')
-        f1 = CountSymbols(card_18)
-        # f1.draw_contours(card_18, f1.symbol_contours)
-        self.assertEquals(f1.symbol_count, 6+4)
+        self.check_train_card(18, False)
 
         card_5 = cv2.imread('Images/ivr1415pract1data1/train5.jpg')
         f1 = CountSymbols(card_5)
         # f1.draw_contours(card_5, f1.symbol_contours)
         self.assertEquals(f1.symbol_count, 3+4)
 
-        card_t30 = cv2.imread('Images/ivr1415pract1data2/test30.jpg')
-        f1 = CountSymbols(card_t30)
-        f1.draw_contours(card_5, f1.symbol_contours)
-        self.assertEquals(f1.symbol_count, 9+4)
+        self.check_test_card(2, True)
+
+    def check_train_card(self, card_num, to_draw):
+        self.check_card('Images/ivr1415pract1data1/train', card_num, card_num, to_draw)
+
+    def check_test_card(self, card_num, to_draw):
+        file_num = card_num
+        card_num = CardClassifier.get_test_label(card_num)
+        self.check_card('Images/ivr1415pract1data2/test', card_num, file_num, to_draw)
+
+    def check_card(self, base, card_num, file_num, to_draw):
+        card = cv2.imread(base + str(file_num) + '.jpg')
+        f1 = CountSymbols(card)
+        if to_draw:
+            f1.draw_contours(card, f1.symbol_contours)
+        print f1.symbol_count
+        self.assertEquals(f1.symbol_count, ((int(card_num)-1)/4)+6)
 
 
 if __name__ == "__main__":

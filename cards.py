@@ -59,7 +59,9 @@ class CardClassifier(object):
 
 
             single_suit = stats.mode(suit, axis=None)[0]
-            single_card_number = CountSymbols(img).symbol_count - 4
+            single_card_number = CountSymbols(img).symbol_count - 4.0
+            print single_card_number
+
 
             single_class = self.convert_suit_and_num_to_card(single_card_number, single_suit)
             print "AVERAGE class: {0} --  suit: {1} --  digit: {2}"\
@@ -105,6 +107,10 @@ class CardClassifier(object):
                 count += 1
         return 100.0 * count / len(labels)
 
+    @staticmethod
+    def get_test_label(num):
+        return (29 - (4 * (int(num)/4))) + (int(num) % 4)
+
 
 if __name__ == "__main__":
     c = CardClassifier()
@@ -112,9 +118,9 @@ if __name__ == "__main__":
     testing_labels = []
     for i in range(0, 32):
         training_labels.append(i+1)
-        new_num = (29 - (4 * (i/4))) + (i % 4)
+        testing_label = c.get_test_label(i)
         #print new_num
-        testing_labels.append(new_num)
+        testing_labels.append(testing_label)
 
     c.add_training_images(training_labels)
     correctly_classified = c.classify_all_test_cards(testing_labels)

@@ -8,11 +8,13 @@ from featuriser import Featuriser
 
 
 def threshes_example(img):
-    ret, thresh1 = cv2.threshold(img, 129, 255, cv2.THRESH_BINARY)
-    ret, thresh2 = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
-    ret, thresh3 = cv2.threshold(img, 127, 255, cv2.THRESH_TRUNC)
-    ret, thresh4 = cv2.threshold(img, 127, 255, cv2.THRESH_TOZERO)
-    ret, thresh5 = cv2.threshold(img, 127, 255, cv2.THRESH_TOZERO_INV)
+    f1 = CountSymbols(img)
+    blur = cv2.medianBlur(f1.grey_image, 5)
+    thresh1 = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 8)
+    thresh2 = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 6)
+    thresh3 = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
+    thresh4 = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    thresh5 = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
     titles = ['Original Image', 'BINARY', 'BINARY_INV', 'TRUNC', 'TOZERO', 'TOZERO_INV']
     images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]
@@ -164,5 +166,5 @@ def adaptive_threshold_example(img):
 
 
 if __name__ == "__main__":
-    image = cv2.imread('Images/ivr1415pract1data1/train18.jpg')
-    adaptive_threshold_example(image)
+    image = cv2.imread('Images/ivr1415pract1data2/test2.jpg')
+    threshes_example(image)
