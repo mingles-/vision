@@ -116,6 +116,44 @@ class CardClassifier(object):
     def get_test_label(num):
         return (29 - (4 * (int(num)/4))) + (int(num) % 4)
 
+    def get_confusion_matrices(self, test_labels, suits_pred, nums_pred):
+
+        nums_test = []
+        suits_test = []
+
+        for i in range(0, 32):
+            nums_test.append(c.convert_class_to_digit(test_labels[i]))
+            suits_test.append((test_labels[i]) % 4)
+
+        print "----------"
+        print "SUIT CONFUSION MATRIX"
+        suits_test, suits_pred, bad_suits = self.removed_bad_classes(suits_test, suits_pred)
+        print "Removed cards - {0}".format(bad_suits)
+        conf_suit = confusion_matrix(suits_test, suits_pred)
+        print conf_suit
+
+        print "----------"
+        print "DIGIT CONFUSION MATRIX"
+        nums_test, nums_pred, bad_num = self.removed_bad_classes(nums_test, nums_pred)
+        print "Removed cards - {0}".format(bad_num)
+        conf_num = confusion_matrix(nums_test, nums_pred)
+        print conf_num
+
+    def removed_bad_classes(self, test, pred):
+        bad = []
+        new_test = []
+        new_pred = []
+        for p in range(0, len(pred)):
+            if pred[p] < 0:
+                bad.append(p)
+            else:
+                new_pred.append(int(pred[p]))
+                new_test.append(test[p])
+        return new_test, new_pred, bad
+
+
+
+
 if __name__ == "__main__":
     c = CardClassifier()
     training_labels = []
@@ -128,20 +166,9 @@ if __name__ == "__main__":
 
 
     c.add_training_images(training_labels)
-    correctly_classified, single_suits, single_nums = c.classify_all_test_cards(testing_labels)
+    correctly_classified, suits_pred, nums_pred = c.classify_all_test_cards(testing_labels)
     print "-------------------------------"
     print "{0}% Correctly Classified".format(correctly_classified)
     print "-------------------------------"
 
-    # confusion matrix stuff
-    print map(int, single_suits)
-    print map(int, single_nums)
-
-    conf_training_numbers = []
-    conf_training_suits = []
-    for i in range(0, 32):
-        conf_training_numbers.append(c.convert_class_to_digit(training_labels[i]))
-        #conf_training_suits.append((training_labels[i]+1) % 4)
-
-    print conf_training_numbers
-    print conf_training_suits
+    c.get_confusion_matrices(testing_labels, suits_pred, nums_pred)

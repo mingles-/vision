@@ -7,8 +7,8 @@ __author__ = 'Sam Davies and Mingles'
 class ContourFinder(object):
 
     def __init__(self, img):
-        img = cv2.medianBlur(img, 5)
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray_img = cv2.medianBlur(gray_img, 5)
         self.grey_image = gray_img
 
         contours, hierarchy = self.image_to_contours()
