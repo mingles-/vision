@@ -94,7 +94,7 @@ class CardClassifier(object):
         """
         Counts the number of cards in the test set which are classified correctly
         :param labels: the labels of the test set cards
-        :return: the percent correct
+        :return: the percent correct and the individual classes and numbers
         """
         count = 0
         single_suits = []
@@ -106,10 +106,11 @@ class CardClassifier(object):
             print("-----")
             print "Classifying card " + str(label)
             classification, single_suit, single_num = self.classify_card(img)
-
+            single_suits.append(single_suit)
+            single_nums.append(single_num)
             if classification != -1 and classification == label:
                 count += 1
-        return 100.0 * count / len(labels)
+        return (100.0 * count / len(labels)), single_suits, single_nums
 
     @staticmethod
     def get_test_label(num):
@@ -128,7 +129,9 @@ if __name__ == "__main__":
 
 
     c.add_training_images(training_labels)
-    correctly_classified = c.classify_all_test_cards(testing_labels)
+    correctly_classified, single_suits, single_nums = c.classify_all_test_cards(testing_labels)
     print "-------------------------------"
     print "{0}% Correctly Classified".format(correctly_classified)
     print "-------------------------------"
+    print single_suits
+    print single_nums
