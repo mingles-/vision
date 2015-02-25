@@ -113,12 +113,12 @@ class FeaturiserAdaptive(ContourFinder):
         super(FeaturiserAdaptive, self).__init__(img)
         self.feature_vectors = [self.get_feature_vector(cnt, img, self.grey_image) for cnt in self.symbol_contours]
 
+    @staticmethod
+    def get_feature_vector(cnt, img, gray_img):
+        return FeaturiserSimple.get_feature_vector(cnt, img, gray_img)
+
 
 class Featuriser(FeaturiserAdaptive):
 
     def __init__(self, img):
         super(Featuriser, self).__init__(img)
-
-    @staticmethod
-    def get_feature_vector(cnt, img, gray_img):
-        return FeaturiserSimple.get_feature_vector(cnt, img, gray_img)
