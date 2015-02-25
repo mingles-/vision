@@ -14,9 +14,7 @@ class ContourFinder(object):
         contours, hierarchy = self.image_to_contours()
 
         card_index, card_contour = self.find_card_contour(contours)
-        inner_card_index, inner_card_contour = self.find_inner_card_contour(contours)
 
-        # self.draw_contours(img, [card_contour])
         card_area = cv2.contourArea(card_contour)
         self.min_area = 0.07 * cv2.contourArea(card_contour)
         self.max_area = 0.6 * cv2.contourArea(card_contour)
@@ -29,13 +27,11 @@ class ContourFinder(object):
 
         good_contours = self.remove_bad_contours(good_contours)
         self.good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
-        # print "num good contours: " + str(len(good_contours))
 
         self.symbol_contours = self.find_symbol_contours(self.good_contours)
 
     def find_card_contour(self, contours):
         image_index, image_contour = self.max_contour_area_index(contours)
-        print "image area " + str(cv2.contourArea(image_contour))
         return self.max_contour_area_index(contours, excluding=[image_index])
 
     def find_inner_card_contour(self, contours):
@@ -45,9 +41,7 @@ class ContourFinder(object):
 
     def image_to_contours(self):
         # turn the image into binary (black and white, no grey)
-        # blur = cv2.medianBlur(self.grey_image, 1)
         thresh = cv2.adaptiveThreshold(self.grey_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 3)
-        # find all the contours in the image, all areas of joint white/black
         return cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     @staticmethod
@@ -64,13 +58,11 @@ class ContourFinder(object):
         symbol_contours = []
 
         for cnt in contours:
-            # print "symbol area of " + str(cv2.contourArea(cnt))
             if self.max_area > cv2.contourArea(cnt):
                 if cv2.contourArea(cnt) > self.min_area:
                     symbol_contours.append(cnt)
                 else:
                     break
-        # self.draw_contours(self.grey_image, symbol_contours)
         return symbol_contours
 
     @staticmethod
@@ -92,7 +84,8 @@ class ContourFinder(object):
         plt.title("draw_contours")
         plt.show()
 
-    def remove_bad_contours(self, contours):
+    @staticmethod
+    def remove_bad_contours(contours):
 
         good_contours = []
 

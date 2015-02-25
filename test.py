@@ -46,9 +46,8 @@ class CountSymbolsTest(unittest.TestCase):
     def test_count_symobols(self):
         self.check_train_card(1, False)
         self.check_train_card(32, False)
-        # self.check_train_card(18, False)
 
-        self.check_train_card(27, True)
+        self.check_train_card(27, False)
 
     def check_train_card(self, card_num, to_draw):
         self.check_card('Images/ivr1415pract1data1/train', card_num, card_num, to_draw)
@@ -63,7 +62,6 @@ class CountSymbolsTest(unittest.TestCase):
         f1 = CountSymbols(card)
         if to_draw:
             f1.draw_contours(card, f1.symbol_contours)
-        print f1.symbol_count
         self.assertEquals(f1.symbol_count, ((int(card_num)-1)/4)+6)
 
 
