@@ -5,11 +5,9 @@ __author__ = 'Sam Davies'
 import cv2
 import numpy as np
 from scipy import stats
-from matplotlib import pyplot as plt
+
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import confusion_matrix
-
-import operator
 
 
 class CardClassifier(object):
@@ -73,11 +71,22 @@ class CardClassifier(object):
 
     @staticmethod
     def convert_class_to_digit(card_num):
+        """
+        Given a card number, find the corresponding digit
+        :param card_num: card number
+        :return: digit
+        """
         return ((int(card_num) - 1)/4) + 2
 
     @staticmethod
-    def convert_suit_and_num_to_card(card_num, suit):
-        card_num_bit = (card_num - 1) * 4
+    def convert_suit_and_num_to_card(digit, suit):
+        """
+        Given a suit and a digit, find the card number
+        :param digit: digit
+        :param suit: suit
+        :return: the card number
+        """
+        card_num_bit = (digit - 1) * 4
         mod_bit = ((suit - 1) % 4) + 1
         return card_num_bit - (4 - mod_bit)
 
@@ -114,10 +123,20 @@ class CardClassifier(object):
 
     @staticmethod
     def get_test_label(num):
+        """
+        given the card number in the test set, find the corresponding label in the training set
+        :param num: the number of the card in test set
+        :return: the label from the training set
+        """
         return (29 - (4 * (int(num)/4))) + (int(num) % 4)
 
     def get_confusion_matrices(self, test_labels, suits_pred, nums_pred):
-
+        """
+        display the confusion matrices for the suits and the digits
+        :param test_labels: the real labels for the images
+        :param suits_pred: the predicted suits
+        :param nums_pred: the predicted digits
+        """
         nums_test = []
         suits_test = []
 
@@ -140,6 +159,12 @@ class CardClassifier(object):
         print conf_num
 
     def removed_bad_classes(self, test, pred):
+        """
+        Remove the cards from for which now feature vectors were found
+        :param test: the real labels
+        :param pred: the predicted labels
+        :return: the edited test adn pred along with the bad cards
+        """
         bad = []
         new_test = []
         new_pred = []
@@ -152,8 +177,6 @@ class CardClassifier(object):
         return new_test, new_pred, bad
 
 
-
-
 if __name__ == "__main__":
     c = CardClassifier()
     training_labels = []
@@ -163,7 +186,6 @@ if __name__ == "__main__":
         testing_label = c.get_test_label(i)
         testing_labels.append(testing_label)
         print("training_label: " + str(i+1) + " testing_label: " + str(testing_label))
-
 
     c.add_training_images(training_labels)
     correctly_classified, suits_pred, nums_pred = c.classify_all_test_cards(testing_labels)
