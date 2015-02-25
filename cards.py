@@ -7,6 +7,8 @@ import numpy as np
 from scipy import stats
 from matplotlib import pyplot as plt
 from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix
+
 import operator
 
 
@@ -45,6 +47,7 @@ class CardClassifier(object):
         train = np.array(self.train).astype(np.float32)
         train_labels = np.array(self.train_labels).astype(np.float32)
 
+
         if to_classify.shape != (0, ):
             gnb = GaussianNB()
             gnb.fit(train, train_labels)
@@ -60,13 +63,11 @@ class CardClassifier(object):
 
             single_suit = stats.mode(suit, axis=None)[0]
             single_card_number = CountSymbols(img).symbol_count - 4.0
-            print single_card_number
-
 
             single_class = self.convert_suit_and_num_to_card(single_card_number, single_suit)
             print "AVERAGE class: {0} --  suit: {1} --  digit: {2}"\
                 .format(single_class[0], single_suit[0], single_card_number)
-            return single_class
+            return single_class, single_suit[0], single_card_number
         else:
             return -1
 
@@ -96,13 +97,16 @@ class CardClassifier(object):
         :return: the percent correct
         """
         count = 0
+        single_suits = []
+        single_nums = []
 
         for x in range(1, len(labels)+1):
             img = cv2.imread('Images/ivr1415pract1data2/test{0}.jpg'.format(x))
             label = labels[x-1]
             print("-----")
             print "Classifying card " + str(label)
-            classification = self.classify_card(img)
+            classification, single_suit, single_num = self.classify_card(img)
+
             if classification != -1 and classification == label:
                 count += 1
         return 100.0 * count / len(labels)
@@ -119,8 +123,9 @@ if __name__ == "__main__":
     for i in range(0, 32):
         training_labels.append(i+1)
         testing_label = c.get_test_label(i)
-        #print new_num
         testing_labels.append(testing_label)
+        print("training_label: " + str(i+1) + " testing_label: " + str(testing_label))
+
 
     c.add_training_images(training_labels)
     correctly_classified = c.classify_all_test_cards(testing_labels)

@@ -10,7 +10,7 @@ class Featuriser(object):
 
         contours_sorted, _, _ = self.img_to_contours(gray_img)
 
-        min_area = 500
+        min_area = 110
         max_area = cv2.contourArea(contours_sorted[0])/25
         relevant_contours = self.find_relevant_contours(contours_sorted, min_area, max_area)
 
@@ -43,8 +43,8 @@ class Featuriser(object):
         hu_moment = cv2.HuMoments(moments)
         #print hu_moment
 
-
         compactness = perimeter * perimeter / (4 * np.pi * area)
+
         feature_vector = [compactness, extent, mean_val[2]]
         return feature_vector
 
