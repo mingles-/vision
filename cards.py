@@ -69,7 +69,7 @@ class CardClassifier(object):
                 .format(single_class[0], single_suit[0], single_card_number)
             return single_class, single_suit[0], single_card_number
         else:
-            return -1
+            return -1, -1, -1
 
     @staticmethod
     def convert_class_to_digit(card_num):

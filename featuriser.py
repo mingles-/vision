@@ -1,9 +1,10 @@
 __author__ = 'Sam Davies'
 import cv2
 import numpy as np
+from countour_finder import ContourFinder
 
 
-class Featuriser(object):
+class FeaturiserSimple(object):
 
     def __init__(self, img):
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -104,3 +105,20 @@ class Featuriser(object):
             return relevant_contours
         else:
             return []
+
+
+class FeaturiserAdaptive(ContourFinder):
+
+    def __init__(self, img):
+        super(FeaturiserAdaptive, self).__init__(img)
+        self.feature_vectors = [self.get_feature_vector(cnt, img, self.grey_image) for cnt in self.symbol_contours]
+
+
+class Featuriser(FeaturiserAdaptive):
+
+    def __init__(self, img):
+        super(Featuriser, self).__init__(img)
+
+    @staticmethod
+    def get_feature_vector(cnt, img, gray_img):
+        return FeaturiserSimple.get_feature_vector(cnt, img, gray_img)
