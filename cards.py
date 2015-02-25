@@ -116,7 +116,6 @@ class CardClassifier(object):
     def get_test_label(num):
         return (29 - (4 * (int(num)/4))) + (int(num) % 4)
 
-
 if __name__ == "__main__":
     c = CardClassifier()
     training_labels = []
@@ -133,5 +132,16 @@ if __name__ == "__main__":
     print "-------------------------------"
     print "{0}% Correctly Classified".format(correctly_classified)
     print "-------------------------------"
-    print single_suits
-    print single_nums
+
+    # confusion matrix stuff
+    print map(int, single_suits)
+    print map(int, single_nums)
+
+    conf_training_numbers = []
+    conf_training_suits = []
+    for i in range(0, 32):
+        conf_training_numbers.append(c.convert_class_to_digit(training_labels[i]))
+        #conf_training_suits.append((training_labels[i]+1) % 4)
+
+    print conf_training_numbers
+    print conf_training_suits
