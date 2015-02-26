@@ -16,10 +16,10 @@ class ContourFinder(object):
 
         card_index, card_contour = self.find_card_contour(contours)
 
-        # rect = cv2.minAreaRect(card_contour)
-        # box = cv2.cv.BoxPoints(rect)
-        # box = np.int0(box)
-        # self.draw_contours(img, [card_contour])
+        rect = cv2.minAreaRect(card_contour)
+        box = cv2.cv.BoxPoints(rect)
+        self.box = np.int0(box)
+        # self.draw_contours(img, [box])
 
         card_area = cv2.contourArea(card_contour)
         self.min_area = 0.07 * cv2.contourArea(card_contour)
@@ -35,7 +35,6 @@ class ContourFinder(object):
         self.good_contours = sorted(good_contours, key=cv2.contourArea, reverse=True)
 
         self.symbol_contours = self.find_symbol_contours(self.good_contours)
-        # self.draw_contours(img, self.symbol_contours)
 
     def find_card_contour(self, contours):
         image_index, image_contour = self.max_contour_area_index(contours)
@@ -83,13 +82,13 @@ class ContourFinder(object):
         return max_area_index, contours[max_area_index]
 
     @staticmethod
-    def draw_contours(card, contours):
+    def draw_contours(card, contours, title):
         for cnt in contours:
             cv2.drawContours(card, [cnt], 0, (0, 255, 0), 3)
-
         plt.imshow(card)
-        plt.title("draw_contours")
+        plt.title(title)
         plt.show()
+
 
     @staticmethod
     def remove_bad_contours(contours):

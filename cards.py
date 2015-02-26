@@ -5,7 +5,7 @@ __author__ = 'Sam Davies and Mingles'
 import cv2
 import numpy as np
 from scipy import stats
-
+from matplotlib import pyplot as plt
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import confusion_matrix
 
@@ -60,7 +60,21 @@ class CardClassifier(object):
 
 
             single_suit = stats.mode(suit, axis=None)[0]
-            single_card_number = CountSymbols(img).symbol_count - 4.0
+            cs = CountSymbols(img)
+            single_card_number = cs.symbol_count - 4.0
+
+
+            if single_suit % 4 == 1:
+                suite = "Spades"
+            elif single_suit % 4 == 2:
+                suite = "Hearts"
+            elif single_suit % 4 == 3:
+                suite = "Clubs"
+            elif single_suit % 4 == 0:
+                suite = "Diamonds"
+
+            # CARD DISPLAY
+            #cs.draw_contours(img, cs.symbol_contours + [cs.box], str(int(single_card_number)) + " of " + str(suite))
 
             single_class = self.convert_suit_and_num_to_card(single_card_number, single_suit)
             print "AVERAGE class: {0} --  suit: {1} --  digit: {2}"\
@@ -186,6 +200,7 @@ if __name__ == "__main__":
         testing_label = c.get_test_label(i)
         testing_labels.append(testing_label)
         print("training_label: " + str(i+1) + " testing_label: " + str(testing_label))
+
 
     c.add_training_images(training_labels)
     correctly_classified, suits_pred, nums_pred = c.classify_all_test_cards(testing_labels)
