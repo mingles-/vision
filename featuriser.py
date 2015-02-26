@@ -1,4 +1,4 @@
-__author__ = 'Sam Davies'
+__author__ = 'Sam Davies and Mingles'
 import cv2
 import numpy as np
 from countour_finder import ContourFinder

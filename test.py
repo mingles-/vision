@@ -1,13 +1,9 @@
 from count_symbols import CountSymbols
-from matplotlib import pyplot as plt
-__author__ = 'Sam Davies'
+__author__ = 'Sam Davies and Mingles'
 
 import unittest
 import cv2
 from cards import CardClassifier
-import numpy as np
-from featuriser import Featuriser
-
 
 
 class CardClassifierTest(unittest.TestCase):

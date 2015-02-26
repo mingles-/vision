@@ -1,7 +1,7 @@
 from count_symbols import CountSymbols
 from featuriser import Featuriser
 
-__author__ = 'Sam Davies'
+__author__ = 'Sam Davies and Mingles'
 import cv2
 import numpy as np
 from scipy import stats

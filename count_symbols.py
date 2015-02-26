@@ -1,6 +1,6 @@
 from countour_finder import ContourFinder
 
-__author__ = 'Sam Davies'
+__author__ = 'Sam Davies and Mingles'
 
 
 class CountSymbols(ContourFinder):
