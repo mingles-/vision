@@ -1,8 +1,6 @@
 from countour_finder import ContourFinder
-from matplotlib import pyplot as plt
 
 __author__ = 'Sam Davies'
-import cv2
 
 
 class CountSymbols(ContourFinder):

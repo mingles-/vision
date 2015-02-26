@@ -118,6 +118,7 @@ class FeaturiserAdaptive(ContourFinder):
         return FeaturiserSimple.get_feature_vector(cnt, img, gray_img)
 
 
+# class Featuriser(FeaturiserSimple):
 class Featuriser(FeaturiserAdaptive):
 
     def __init__(self, img):
